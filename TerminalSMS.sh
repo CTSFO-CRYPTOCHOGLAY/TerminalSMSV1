@@ -1,90 +1,47 @@
-#!/bin/bash 
-#echo "Devloped by mohammed choglay"
-apiKey=
-number=
-message=
-comp=
-time=0 
+#!/bin/bash
+functionPath="$(pwd)"
+. $functionPath/main_texting.sh
 
-main(){
-echo "[!]Enter Number On Target:"
-read number
+banner () {	                        
+	echo -e "" \     "\t\t\t\t  ______                    _             _______ __  ________ \n" \
+                         "\t\t\t\t /_  __/__  _________ ___  (_)___  ____ _/ / ___//  |/  / ___/ \n" \
+                         "\t\t\t\t   / / / _ \/ ___/ __ __ \/ / __ \/ __ / /\__ \/ /|_/ /\__ \   \n" \
+                         "\t\t\t\t  / / /  __/ /  / / / / / / / / / / /_/ / /___/ / /  / /___/ / \n" \
+                         "\t\t\t\t /_/  \___/_/  /_/ /_/ /_/_/_/ /_/\__,_/_//____/_/  /_//____/  \n" \
+			 "\t\t\t\t by Mohammed Choglay                                           \n" \
+			 ""
+  		}
 
-echo "[!]Enter Message For Target:"
-read message
+	 
+help_menu () {
+		 echo -e "\n"
+	         echo -e "\t\t\t\t LEGAL NOTICE: YOU ARE HELD RESPONSIBLE FOR YOUR OWN ACTIONS." 
+		 echo -e "\t\t\t\t IF THE TOOL IS MISSSED USED YOU COULD FACE CRIMINAL CHARGES"
+                 echo -e "\t\t\t\t AND I WILL NOT BE HELD RESPONSIBLE FOR YOUR ACTIONS." 
+	         echo -e "\n"
+		 echo -e "\t\t\t\t===========================Options========================="
+		 echo -e "\t\t\t\t -b | --balance Allow you to check the mount of message you have left"
+		 echo -e "\t\t\t\t -c | --check Allows to check the status of your messages"
+		 echo -e "\t\t\t\t -f | --file Allows you to read numbers from a .txt file"
+                 echo -e "\t\t\t\t -s | --START This will start them main TerminalSMS function"
+	 }
 
-echo "[!]Would you like to add timer? (Y/N)"
-read comp
-if [[ "$comp" == "Y" ]] || [[ "$comp" == "y" ]]; then
-echo "[!]Enter the amount of seconds required"	
-read time 
-elif [[ "$comp" == "N" ]] || [[ "$comp" == "n" ]]; then
-	:
+usersOption=$1
+
+if [[ "$usersOption" == "-h" || "$usersOption" == "--help" ]]; then 
+	banner
+	help_menu
+elif [[ "$#" -lt 1 ]]; then
+	banner
+	echo "Sytax Error: Use --help or -h for help. e.g 'TerminalSMS -h' "
+else 
+	if [[ "$usersOption" == "-f" || "$usersOption" == "--file" ]]; then
+		readFromFile $2
+	elif [[ "$usersOption" == "-s" || "$usersOption" ==  "--start" ]]; then
+		main
+	elif [[ "$usersOption" == "-c" || "$usersOption" == "--check" ]]; then 
+		statusCheck 
+	elif [[ "$usersOption" == "-b" || "$usersOption" == "--balance" ]]; then 
+		creditCheck
+	fi
 fi
-
-echo "==============================="
-
-echo "[!]Locking On Traget:" $number
-echo "[!]Message To Be Transmitted:" $message
-echo "[!]Timer Set For:" $time
-
-echo "[!]DO YOU WISH TO PROCCED WITH TRANSMISSION? (Y/N)"
-read comp
-if [[ "$comp" == "Y" ]] || [[ "$comp" == "y" ]]; then  
-  sleep $time
-     curl -X POST https://textbelt.com/text \
-     --data-urlencode phone="$number" \
-     --data-urlencode message="$message" \
-     -d key="$apiKey"
-elif [[ "$comp" == "N" ]] || [[ "$comp" == "n" ]]; then
-   echo "[!] Session Terminated! "
-fi
-}
-
-readFromFile(){
-fileName=$1
-
-echo "[!] Reading numbers from $fileName list"
-echo "[!] Enter a message that you want to send to $fileName list"
-read message 
-
-echo "Would you like to add a timer (Y/N)"
-read comp
-if [[ "$comp" == "Y" ]] || [[ "$comp" == "y" ]]; then 
-echo "[!]Enter the amount of seconds required"
-read time
-elif [[ "$comp" == "N" ]] || [[ "$comp" == "n" ]]; then
-	:
-fi
-
-echo "==========================================================="
-
-echo "[!]Locking On Targets From: $fileName"
-echo "[!]Message To Be Transmiited: $message"
-echo "[!]Timer Set To: $time seconds"
-
-echo "[!] DO YOU WISH TO PROCCED WITH TRANSMISSION? (Y/N)"
-read comp
-if [[ "$comp" == "Y" ]] || [[ "$comp" == "y" ]]; then
-       sleep $time 
-	while read line; do
-		curl -X POST https://textbelt.com/text \
-		--data-urlencode phone="$line" \
-		--data-urlencode message="$message" \
-		-d key="$apiKey"
-	done < ${fileName}
-elif [[ "$comp" == "N" ]] || [[ "$comp" == "n" ]]; then 
-	echo "[!] Session Terminated!"
-fi
-}
-
-statusCheck(){
-echo "[!]Enter your textID for delivery status:"
-read textID
-curl https://textbelt.com/status/$textID
-}
-
-creditCheck(){ 
-echo "[!]Checking your credits:"
-curl https://textbelt.com/quota/$apiKey
-}
